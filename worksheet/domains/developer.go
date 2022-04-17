@@ -3,42 +3,56 @@ package domains
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 )
 
 type Developer struct {
-	name  string
-	level Level
+	name       string
+	level      int
+	project    *Project
+	urgentList chan *Task
 }
 
-func NewDeveloper(name string, level Level) *Developer {
+func NewDeveloper(name string, level int, project *Project) *Developer {
+	var urgentList chan *Task
+	if level == int(project.difficult) {
+		urgentList = project.urgentList
+	}
 	return &Developer{
-		name:  name,
-		level: level,
+		name:       name,
+		level:      level,
+		project:    project,
+		urgentList: urgentList,
 	}
 }
 
-func (d *Developer) Run(ctx context.Context, wg *sync.WaitGroup) {
+func (d *Developer) Run(ctx context.Context) {
 	for {
 		select {
-		case task := <-d.level.lvChan:
-			fmt.Printf("%s bir görevi aldı\n", d.name)
-			task.assigned = d
-			time.Sleep(time.Duration(task.cost*100) * time.Millisecond)
-			task.Status = true
-			fmt.Printf("%s bir görevi bitirdi\n", d.name)
-			wg.Done()
+		case task := <-d.urgentList:
+			fmt.Printf("%s \t bir %s \t acil olarak aldı\n", d.name, task.taskType)
+			task.Done(d)
+		case task := <-d.project.workList:
+			fmt.Printf("%s \t bir %s \t aldı\n", d.name, task.taskType)
+			if !task.failed.IsZero() && task.failed.Before(time.Now()) {
+				continue
+			}
+			if task.failed.IsZero() && d.level < task.requiredLevel {
+				task.failed = time.Now().Add(time.Duration(task.cost*100) * 5 * time.Millisecond)
+				d.project.urgentList <- task
+				fmt.Printf("%s \t bir %s  \tiade edildi\n", d.name, task.taskType)
+				continue
+			}
+			task.Done(d)
 		case <-ctx.Done():
-			fmt.Printf("%s gorevlerini tamamladı", d.name)
+			fmt.Printf("%s \t işten çıktı \n", d.name)
 			return
 		default:
-			fmt.Printf("%s görev bekliyor (Aktif Görev: %d) \n", d.name, len(d.level.lvChan))
-			time.Sleep(time.Second * 2)
+			time.Sleep(time.Millisecond * 100)
 		}
 	}
 }
 
-func (d *Developer) SetLevel(level Level) {
+func (d *Developer) SetLevel(level int) {
 	d.level = level
 }
