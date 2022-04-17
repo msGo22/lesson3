@@ -15,7 +15,7 @@ type Developer struct {
 
 func NewDeveloper(name string, level int, project *Project) *Developer {
 	var urgentList chan *Task
-	if level == int(project.difficult) {
+	if level >= int(project.difficult) {
 		urgentList = project.urgentList
 	}
 	return &Developer{

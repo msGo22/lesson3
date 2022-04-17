@@ -37,7 +37,7 @@ func (p Project) Statuses() {
 			isCompleted = false
 			statusMessage = "bitirilemedi."
 		}
-		fmt.Printf("%s - %s  (lv %d) görevi %s\n", task.taskType, task.Id, task.requiredLevel, statusMessage)
+		fmt.Printf("%s - %s  (lv %d) görevi %s tarafından %s\n", task.taskType, task.Id, task.requiredLevel, task.assigned.name, statusMessage)
 	}
 	if isCompleted {
 		fmt.Printf("Proje Bitmiştir\n")

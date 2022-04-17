@@ -10,8 +10,8 @@ func main() {
 	teamLead.AddDeveloper("Hakkı", 1)
 	teamLead.AddDeveloper("Cengiz", 1)
 	teamLead.AddDeveloper("Kemal", 2)
-	teamLead.AddDeveloper("Yavuz", 3)
-	teamLead.AddDeveloper("Necmi", 3)
+	teamLead.AddDeveloper("Cezmi", 3)
+
 	teamLead.Start()
 	project.Statuses()
 }
