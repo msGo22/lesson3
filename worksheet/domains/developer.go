@@ -40,7 +40,7 @@ func (d *Developer) Run(ctx context.Context) {
 			if task.failed.IsZero() && d.level < task.requiredLevel {
 				task.failed = time.Now().Add(time.Duration(task.cost*100) * 5 * time.Millisecond)
 				d.project.urgentList <- task
-				fmt.Printf("%s \t bir %s  \tiade edildi\n", d.name, task.taskType)
+				fmt.Printf("%s \t bir %s  \t iade edildi\n", d.name, task.taskType)
 				continue
 			}
 			task.Done(d)

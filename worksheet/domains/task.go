@@ -1,6 +1,7 @@
 package domains
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"math/rand"
 	"time"
@@ -19,7 +20,7 @@ type Task struct {
 
 func (t *Task) Done(developer *Developer) {
 	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
-	if rnd.Int()%100 < 35 {
+	if rnd.Int()%100 < (30 / developer.level) {
 		if subTaskCost := t.cost * 0.25; subTaskCost > 0.01 {
 			t.project.wg.Add(1)
 			level := developer.level - 1
@@ -27,7 +28,8 @@ func (t *Task) Done(developer *Developer) {
 				level = 1
 			}
 			newTask := NewTask(subTaskCost, level, "Bug", t.project)
-			developer.project.workList <- newTask
+			developer.project.teamLeadMessages <- newTask
+			fmt.Printf("%s \t bir hata \t yaptı\n", developer.name)
 		}
 	}
 	t.assigned = developer

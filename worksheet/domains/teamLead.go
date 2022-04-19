@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 )
 
 type TeamLead struct {
@@ -31,16 +32,17 @@ func (l *TeamLead) Start() error {
 func (l *TeamLead) sendAllRequestToBoard(project *Project) {
 	for _, task := range project.tasks {
 		l.project.workList <- task
+		time.Sleep(250 * time.Millisecond)
 	}
 }
 
 func (l *TeamLead) runAllDevelopers() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	go l.sendAllRequestToBoard(l.project)
+	go l.newAssignments(ctx)
 	for _, v := range l.developers {
 		go v.Run(ctx)
 	}
-	go l.newAssignments(ctx)
 	l.project.wg.Wait()
 	// tüm developerlar paydos verir
 	cancel()
@@ -56,7 +58,7 @@ func (l *TeamLead) newAssignments(ctx context.Context) {
 			fmt.Println("Takım liderine mesaj geldi")
 			if task.failed.IsZero() {
 				l.project.workList <- task
-				return
+				continue
 			}
 			l.project.urgentList <- task
 		}
